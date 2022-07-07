@@ -416,15 +416,15 @@ export class KubeResourceChart extends React.Component<KubeResourceChartProps, S
   getIngressNode(ingress: Renderer.K8sApi.Ingress) {
     const ingressNode = this.generateNode(ingress);
 
-    ingress.spec.tls?.filter(tls => tls.secretName).forEach((tls) => {
-      const secret = this.secretStore.getByName(tls.secretName, ingress.getNs());
-      if (secret) {
-        const secretNode = this.generateNode(secret)
-        if (secretNode) {
-          this.addLink({ source: ingressNode.id, target: secretNode.id })
-        }
-      }
-    });
+    // ingress.spec.tls?.filter(tls => tls.secretName).forEach((tls) => {
+    //   const secret = this.secretStore.getByName(tls.secretName, ingress.getNs());
+    //   if (secret) {
+    //     const secretNode = this.generateNode(secret)
+    //     if (secretNode) {
+    //       this.addLink({ source: ingressNode.id, target: secretNode.id })
+    //     }
+    //   }
+    // });
 
     return ingressNode
   }
@@ -449,43 +449,43 @@ export class KubeResourceChart extends React.Component<KubeResourceChartProps, S
       return podNode;
     }
 
-    pod.getContainers().forEach((container) => {
-      container.env?.forEach((env) => {
-        const secretName = env.valueFrom?.secretKeyRef?.name;
-        if (secretName) {
-          const secret = this.secretStore.getByName(secretName, pod.getNs());
-          if (secret) {
-            const secretNode = this.generateNode(secret)
-            this.addLink({
-              source: podNode.id, target: secretNode.id
-            })
-          }
-        }
-      })
-      container.envFrom?.forEach((envFrom) => {
-        const configMapName = envFrom.configMapRef?.name;
-        if (configMapName) {
-          const configMap = this.configMapStore.getByName(configMapName, pod.getNs());
-          if (configMap) {
-            const configMapNode = this.generateNode(configMap);
-            this.addLink({
-              source: podNode.id, target: configMapNode.id
-            })
-          }
-        }
+    // pod.getContainers().forEach((container) => {
+    //   // container.env?.forEach((env) => {
+    //   //   const secretName = env.valueFrom?.secretKeyRef?.name;
+    //   //   if (secretName) {
+    //   //     const secret = this.secretStore.getByName(secretName, pod.getNs());
+    //   //     if (secret) {
+    //   //       const secretNode = this.generateNode(secret)
+    //   //       this.addLink({
+    //   //         source: podNode.id, target: secretNode.id
+    //   //       })
+    //   //     }
+    //   //   }
+    //   // })
+    //   container.envFrom?.forEach((envFrom) => {
+    //     const configMapName = envFrom.configMapRef?.name;
+    //     if (configMapName) {
+    //       const configMap = this.configMapStore.getByName(configMapName, pod.getNs());
+    //       if (configMap) {
+    //         const configMapNode = this.generateNode(configMap);
+    //         this.addLink({
+    //           source: podNode.id, target: configMapNode.id
+    //         })
+    //       }
+    //     }
 
-        const secretName = envFrom.secretRef?.name;
-        if (secretName) {
-          const secret = this.secretStore.getByName(secretName, pod.getNs());
-          if (secret) {
-            const secretNode = this.generateNode(secret);
-            this.addLink({
-              source: podNode.id, target: secretNode.id
-            })
-          }
-        }
-      })
-    })
+    //     const secretName = envFrom.secretRef?.name;
+    //     if (secretName) {
+    //       const secret = this.secretStore.getByName(secretName, pod.getNs());
+    //       if (secret) {
+    //         const secretNode = this.generateNode(secret);
+    //         this.addLink({
+    //           source: podNode.id, target: secretNode.id
+    //         })
+    //       }
+    //     }
+    //   })
+    // })
 
 
     pod.getVolumes().filter(volume => volume.persistentVolumeClaim?.claimName).forEach((volume) => {
@@ -510,15 +510,15 @@ export class KubeResourceChart extends React.Component<KubeResourceChartProps, S
       }
     })
 
-    pod.getSecrets().forEach((secretName) => {
-      const secret = this.secretStore.getByName(secretName, pod.getNs());
-      if (secret) {
-        const dataItem = this.generateNode(secret)
-        if (dataItem) {
-          this.addLink({target: podNode.id, source: dataItem.id});
-        }
-      }
-    })
+    // pod.getSecrets().forEach((secretName) => {
+    //   const secret = this.secretStore.getByName(secretName, pod.getNs());
+    //   if (secret) {
+    //     const dataItem = this.generateNode(secret)
+    //     if (dataItem) {
+    //       this.addLink({target: podNode.id, source: dataItem.id});
+    //     }
+    //   }
+    // })
 
     return podNode;
   }

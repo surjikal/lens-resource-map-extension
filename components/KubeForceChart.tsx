@@ -272,40 +272,40 @@ export class KubeForceChart extends React.Component<KubeForceChartProps, State> 
     const { secretStore } = this;
     const { selectedNamespaces} = this.namespaceStore;
 
-    secretStore.getAllByNs(selectedNamespaces).forEach((secret: Renderer.K8sApi.Secret) => {
-      // Ignore service account tokens and tls secrets
-      if (["kubernetes.io/service-account-token", "kubernetes.io/tls"].includes(secret.type.toString())) return;
+    // secretStore.getAllByNs(selectedNamespaces).forEach((secret: Renderer.K8sApi.Secret) => {
+    //   // Ignore service account tokens and tls secrets
+    //   if (["kubernetes.io/service-account-token", "kubernetes.io/tls"].includes(secret.type.toString())) return;
 
-      const secretNode = this.generateNode(secret);
+    //   const secretNode = this.generateNode(secret);
 
-      if (secret.type.toString() === "helm.sh/release.v1") {
-        const helmReleaseNode = this.getHelmReleaseChartNode(secret.metadata.labels.name, secret.getNs())
-        this.addLink({source: secretNode.id, target: helmReleaseNode.id});
-      }
+    //   if (secret.type.toString() === "helm.sh/release.v1") {
+    //     const helmReleaseNode = this.getHelmReleaseChartNode(secret.metadata.labels.name, secret.getNs())
+    //     this.addLink({source: secretNode.id, target: helmReleaseNode.id});
+    //   }
 
-      // search for container links
-      this.nodes.filter(node => node.kind === "Pod" && node.namespace == secret.getNs()).forEach((podNode) => {
-        const pod = (podNode.object as Renderer.K8sApi.Pod)
-        pod.getContainers().forEach((container) => {
-          container.env?.forEach((env) => {
-            const secretName = env.valueFrom?.secretKeyRef?.name;
-            if (secretName == secret.getName()) {
-              this.addLink({
-                source: podNode.id, target: secretNode.id
-              })
-            }
-          })
-          container.envFrom?.map(envFrom => {
-            const secretName = envFrom.secretRef?.name;
-            if (secretName && secretName == secret.getName()) {
-              this.addLink({
-                source: podNode.id, target: secretNode.id
-              })
-            }
-          })
-        })
-      })
-    })
+    //   // search for container links
+    //   this.nodes.filter(node => node.kind === "Pod" && node.namespace == secret.getNs()).forEach((podNode) => {
+    //     const pod = (podNode.object as Renderer.K8sApi.Pod)
+    //     pod.getContainers().forEach((container) => {
+    //       container.env?.forEach((env) => {
+    //         const secretName = env.valueFrom?.secretKeyRef?.name;
+    //         if (secretName == secret.getName()) {
+    //           this.addLink({
+    //             source: podNode.id, target: secretNode.id
+    //           })
+    //         }
+    //       })
+    //       container.envFrom?.map(envFrom => {
+    //         const secretName = envFrom.secretRef?.name;
+    //         if (secretName && secretName == secret.getName()) {
+    //           this.addLink({
+    //             source: podNode.id, target: secretNode.id
+    //           })
+    //         }
+    //       })
+    //     })
+    //   })
+    // })
   }
 
   protected generateVolumeClaims() {
@@ -323,15 +323,15 @@ export class KubeForceChart extends React.Component<KubeForceChartProps, State> 
     ingressStore.getAllByNs(selectedNamespaces).forEach((ingress: Renderer.K8sApi.Ingress) => {
 
       const ingressNode = this.generateNode(ingress);
-      ingress.spec.tls?.filter(tls => tls.secretName).forEach((tls) => {
-        const secret = this.secretStore.getByName(tls.secretName, ingress.getNs());
-        if (secret) {
-          const secretNode = this.generateNode(secret)
-          if (secretNode) {
-            this.addLink({ source: ingressNode.id, target: secretNode.id })
-          }
-        }
-      })
+      // ingress.spec.tls?.filter(tls => tls.secretName).forEach((tls) => {
+      //   const secret = this.secretStore.getByName(tls.secretName, ingress.getNs());
+      //   if (secret) {
+      //     const secretNode = this.generateNode(secret)
+      //     if (secretNode) {
+      //       this.addLink({ source: ingressNode.id, target: secretNode.id })
+      //     }
+      //   }
+      // })
       ingress.spec.rules.forEach((rule) => {
         rule.http.paths.forEach((path) => {
           const serviceName = (path.backend as any).serviceName || (path.backend as any).service.name
@@ -478,42 +478,45 @@ export class KubeForceChart extends React.Component<KubeForceChartProps, State> 
     else if (["CrashLoopBackOff", "Failed", "Error"].includes(pod.getStatusMessage())) {
       podNode.color = "#ce3933"
     }
-    pod.getContainers().forEach((container) => {
-      container.env?.forEach((env) => {
-        const secretName = env.valueFrom?.secretKeyRef?.name;
-        if (secretName) {
-          const secret = this.secretStore.getByName(secretName, pod.getNs());
-          if (secret) {
-            const secretNode = this.generateNode(secret)
-            this.addLink({
-              source: podNode.id, target: secretNode.id
-            })
-          }
-        }
-      })
-      container.envFrom?.forEach((envFrom) => {
-        const configMapName = envFrom.configMapRef?.name;
-        if (configMapName) {
-          const configMap = this.configMapStore.getByName(configMapName, pod.getNs());
-          if (configMap) {
-            const configMapNode = this.generateNode(configMap);
-            this.addLink({
-              source: podNode.id, target: configMapNode.id
-            })
-          }
-        }
 
-        const secretName = envFrom.secretRef?.name;
-        if (secretName) {
-          const secret = this.secretStore.getByName(secretName, pod.getNs());
-          if (secret) {
-            const secretNode = this.generateNode(secret);
-            this.addLink({
-              source: podNode.id, target: secretNode.id
-            })
-          }
-        }
-      })
+    pod.getContainers().forEach((container) => {
+
+      // container.env?.forEach((env) => {
+      //   const secretName = env.valueFrom?.secretKeyRef?.name;
+      //   if (secretName) {
+      //     const secret = this.secretStore.getByName(secretName, pod.getNs());
+      //     if (secret) {
+      //       const secretNode = this.generateNode(secret)
+      //       this.addLink({
+      //         source: podNode.id, target: secretNode.id
+      //       })
+      //     }
+      //   }
+      // })
+
+      // container.envFrom?.forEach((envFrom) => {
+      //   const configMapName = envFrom.configMapRef?.name;
+      //   if (configMapName) {
+      //     const configMap = this.configMapStore.getByName(configMapName, pod.getNs());
+      //     if (configMap) {
+      //       const configMapNode = this.generateNode(configMap);
+      //       this.addLink({
+      //         source: podNode.id, target: configMapNode.id
+      //       })
+      //     }
+      //   }
+
+      //   const secretName = envFrom.secretRef?.name;
+      //   if (secretName) {
+      //     const secret = this.secretStore.getByName(secretName, pod.getNs());
+      //     if (secret) {
+      //       const secretNode = this.generateNode(secret);
+      //       this.addLink({
+      //         source: podNode.id, target: secretNode.id
+      //       })
+      //     }
+      //   }
+      // })
     })
 
 
@@ -538,15 +541,15 @@ export class KubeForceChart extends React.Component<KubeForceChartProps, State> 
         }
       }
     })
-    pod.getSecrets().forEach((secretName) => {
-      const secret = this.secretStore.getByName(secretName, pod.getNs());
-      if (secret && secret.type.toString() !== "kubernetes.io/service-account-token") {
-        const dataItem = this.generateNode(secret)
-        if (dataItem) {
-          this.addLink({target: podNode.id, source: dataItem.id});
-        }
-      }
-    })
+    // pod.getSecrets().forEach((secretName) => {
+    //   const secret = this.secretStore.getByName(secretName, pod.getNs());
+    //   if (secret && secret.type.toString() !== "kubernetes.io/service-account-token") {
+    //     const dataItem = this.generateNode(secret)
+    //     if (dataItem) {
+    //       this.addLink({target: podNode.id, source: dataItem.id});
+    //     }
+    //   }
+    // })
 
     return podNode;
   }
